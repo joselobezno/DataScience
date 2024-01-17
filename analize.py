@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt 
 import seaborn as sn 
-from app import gps_merge
+from validation import gps_merge
 
 plt.figure(figsize=(6,4))
 plt.title("Countplot Content Rating")

@@ -1,28 +1,23 @@
-
-from cleaning import read_data,merge,clean
-from model import tunning, boosting
-from deploy import save_model
+from flask import Flask
+from flask import request
 import pandas as pd
+import joblib
 
-"""
-INFORMACIÓN IMPORTANTE
-La variable objetivo escogida fue "Rating:float"
 
-WARNING
-Recuera que el path te arroja los sepradores "\" pero se deben cambiar por "/"
-"""
-gps_rating = read_data("C:/Users/jovillalba/Desktop/myproject/data/googleplaystore.csv")
-gps_reviews = read_data("C:/Users/jovillalba/Desktop/myproject/data/googleplaystore_user_reviews.csv")
+app = Flask(__name__)
 
-gps_merge = merge(gps_rating,gps_reviews,"left","App")
+@app.route('/predice', methods=['POST'])
+def predict():
+    json_ = request.json
+    query_df = pd.DataFrame(json_, index=[0])
+    query = pd.get_dummies(query_df)
 
-gps_merge_clean = clean(gps_merge)
+    classifier = joblib.load('models/modelo_jose_villalba.joblib')
+    prediction = classifier.predict(query)
 
-tunning_message, tunning_y_pred = tunning(gps_merge_clean,"Rating")
+   
+    return "La predicción es {}".format(prediction)
 
-boosting_message, boost_y_pred, y_test,boosting_model = boosting(gps_merge_clean,"Rating","squared_error")
 
-print(tunning_message, "\n",boosting_message)
-print(pd.DataFrame({"y_real":y_test,"y_pred_tunning":tunning_y_pred,"y_pred_boosting":boost_y_pred}))
-
-save_model(boosting_model)
+if __name__ == "__main__":
+    app.run(port=8000, debug=True)
